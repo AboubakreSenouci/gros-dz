@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import { getUser } from "@/lib/queries/user";
+import { getSuppliers } from "@/lib/queries/suppliers";
 
 import { SWRConfig } from "swr";
 
@@ -30,9 +30,7 @@ export default function RootLayout({
         <SWRConfig
           value={{
             fallback: {
-              // We do NOT await here
-              // Only components that read this data will suspend
-              "/api/user": getUser(),
+              "/api/user": getSuppliers(),
             },
           }}
         >
