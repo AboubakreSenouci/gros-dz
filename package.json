@@ -19,12 +19,15 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.43.1",
     "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
     "next": "15.4.0-canary.47",
+    "ollama": "^0.5.16",
+    "openai": "^5.9.0",
     "postcss": "^8.5.3",
     "postgres": "^3.4.5",
     "radix-ui": "^1.4.2",
@@ -35,8 +38,10 @@
     "swr": "^2.3.3",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "4.1.7",
+    "telegram": "^2.26.22",
     "tw-animate-css": "^1.3.0",
     "typescript": "^5.8.3",
     "zod": "^3.24.4"
-  }
+  },
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }
