@@ -1,0 +1,42 @@
+{
+    "home": "Accueil",
+    "products": "Produits",
+    "suppliers": "Fournisseurs",
+    "about": "À propos",
+    "contact": "Contact",
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+
+    "hero_main_title": "La première plateforme de commerce de gros en Algérie",
+    "hero_tagline": "Connectez-vous directement avec les meilleurs fournisseurs locaux.",
+    "hero_cta_discover": "Découvrir les produits",
+    "hero_cta_register": "Inscrire votre boutique",
+
+    "features_heading": "Pourquoi choisir notre plateforme ?",
+    "feature_choice_title": "Large choix de produits",
+    "feature_choice_desc": "Accédez à des milliers de produits de qualité provenant de fournisseurs vérifiés à travers l'Algérie.",
+    "feature_direct_title": "Connexion directe avec les fournisseurs",
+    "feature_direct_desc": "Éliminez les intermédiaires et négociez directement avec les producteurs et distributeurs.",
+    "feature_support_title": "Support en arabe et en français",
+    "feature_support_desc": "Notre équipe vous accompagne dans votre langue préférée pour faciliter vos transactions.",
+
+    "how_title": "Comment ça marche ?",
+    "how_step1_title": "Créer un compte",
+    "how_step1_desc": "Inscrivez-vous gratuitement en quelques minutes",
+    "how_step2_title": "Découvrir des produits",
+    "how_step2_desc": "Explorez notre catalogue de produits variés",
+    "how_step3_title": "Contacter un fournisseur",
+    "how_step3_desc": "Négociez directement avec les fournisseurs",
+
+    "trusted_heading": "Ils nous font confiance",
+    "trusted_subtitle": "Plus de 500 entreprises utilisent déjà notre plateforme",
+
+    "cta_main_title": "Rejoignez-nous dès aujourd'hui et développez votre activité !",
+    "cta_button": "Commencer maintenant",
+
+    "footer_legal": "Mentions légales",
+    "footer_privacy": "Politique de confidentialité",
+    "footer_terms": "Conditions d'utilisation",
+    "footer_contact": "Contact: +213 XXX XXX XXX",
+    "footer_email": "Email: contact@marketplace.dz"
+  }

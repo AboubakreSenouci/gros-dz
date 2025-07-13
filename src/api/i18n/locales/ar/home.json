@@ -1,0 +1,42 @@
+{
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "suppliers": "الموردين",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "login": "تسجيل الدخول",
+    "signup": "التسجيل",
+
+    "hero_main_title": "أول منصة تجارة جملة في الجزائر",
+    "hero_tagline": "اتصل مباشرة مع أفضل الموردين المحليين.",
+    "hero_cta_discover": "اكتشف المنتجات",
+    "hero_cta_register": "سجل متجرك",
+
+    "features_heading": "لماذا تختار منصتنا؟",
+    "feature_choice_title": "مجموعة كبيرة من المنتجات",
+    "feature_choice_desc": "احصل على آلاف المنتجات عالية الجودة من موردين موثوقين في جميع أنحاء الجزائر.",
+    "feature_direct_title": "اتصال مباشر مع الموردين",
+    "feature_direct_desc": "تخلص من الوسطاء وتفاوض مباشرة مع المنتجين والموزعين.",
+    "feature_support_title": "دعم باللغة العربية والفرنسية",
+    "feature_support_desc": "فريقنا يدعمك بلغتك المفضلة لتسهيل معاملاتك.",
+
+    "how_title": "كيف يعمل؟",
+    "how_step1_title": "إنشاء حساب",
+    "how_step1_desc": "سجل مجاناً في دقائق معدودة",
+    "how_step2_title": "اكتشف المنتجات",
+    "how_step2_desc": "استكشف كتالوجنا المتنوع من المنتجات",
+    "how_step3_title": "اتصل بالمورد",
+    "how_step3_desc": "تفاوض مباشرة مع الموردين",
+
+    "trusted_heading": "يثقون بنا",
+    "trusted_subtitle": "أكثر من 500 شركة تستخدم منصتنا بالفعل",
+
+    "cta_main_title": "انضم إلينا اليوم وطور نشاطك التجاري!",
+    "cta_button": "ابدأ الآن",
+
+    "footer_legal": "الإشعارات القانونية",
+    "footer_privacy": "سياسة الخصوصية",
+    "footer_terms": "شروط الاستخدام",
+    "footer_contact": "الاتصال: +213 XXX XXX XXX",
+    "footer_email": "البريد الإلكتروني: contact@marketplace.dz"
+  }
