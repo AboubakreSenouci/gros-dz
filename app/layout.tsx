@@ -1,42 +1,13 @@
+import { RootLayout } from "@/src/components/root-layout";
 import "./globals.css";
-import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
-import { getSuppliers } from "@/lib/queries/suppliers";
 
-import { SWRConfig } from "swr";
+import { cookies } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "Next.js SaaS Starter",
-  description: "Get started quickly with Next.js, Postgres, and Stripe.",
+const Layout = async ({ children }: { children: React.ReactElement }) => {
+  const cookieStore = await cookies();
+  const lng = cookieStore.get("i18next")?.value || "en";
+
+  return <RootLayout lng={lng}>{children}</RootLayout>;
 };
 
-export const viewport: Viewport = {
-  maximumScale: 1,
-};
-
-const manrope = Manrope({ subsets: ["latin"] });
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html
-      lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
-    >
-      <body className="min-h-[100dvh] bg-gray-50">
-        <SWRConfig
-          value={{
-            fallback: {
-              "/api/user": getSuppliers(),
-            },
-          }}
-        >
-          {children}
-        </SWRConfig>
-      </body>
-    </html>
-  );
-}
+export default Layout;

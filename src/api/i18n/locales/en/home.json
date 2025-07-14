@@ -1,0 +1,42 @@
+{
+    "home": "Home",
+    "products": "Products",
+    "suppliers": "Suppliers",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "signup": "Sign Up",
+
+    "hero_main_title": "The first wholesale marketplace platform in Algeria",
+    "hero_tagline": "Connect directly with the best local suppliers.",
+    "hero_cta_discover": "Discover Products",
+    "hero_cta_register": "Register Your Store",
+
+    "features_heading": "Why choose our platform?",
+    "feature_choice_title": "Wide selection of products",
+    "feature_choice_desc": "Access thousands of quality products from verified suppliers across Algeria.",
+    "feature_direct_title": "Direct connection with suppliers",
+    "feature_direct_desc": "Eliminate intermediaries and negotiate directly with producers and distributors.",
+    "feature_support_title": "Support in Arabic and French",
+    "feature_support_desc": "Our team assists you in your preferred language to facilitate your transactions.",
+
+    "how_title": "How it works?",
+    "how_step1_title": "Create an account",
+    "how_step1_desc": "Sign up for free in minutes",
+    "how_step2_title": "Discover products",
+    "how_step2_desc": "Explore our diverse product catalog",
+    "how_step3_title": "Contact a supplier",
+    "how_step3_desc": "Negotiate directly with suppliers",
+
+    "trusted_heading": "Trusted by",
+    "trusted_subtitle": "Over 500 businesses already use our platform",
+
+    "cta_main_title": "Join us today and grow your business!",
+    "cta_button": "Get Started",
+
+    "footer_legal": "Legal Notice",
+    "footer_privacy": "Privacy Policy",
+    "footer_terms": "Terms of Use",
+    "footer_contact": "Contact: +213 XXX XXX XXX",
+    "footer_email": "Email: contact@marketplace.dz"
+  }
