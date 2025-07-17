@@ -1,0 +1,17 @@
+{
+  "welcome_back": "Bon retour",
+  "login_to_account": "Connectez-vous à votre compte Acme Inc",
+  "forgot_password": "Mot de passe oublié ?",
+  "phone_number_placeholder": "06 98 98 98 98",
+  "phone_number": "Numéro de téléphone",
+  "login": "Connexion",
+  "or_continue_with": "Ou continuez avec",
+  "login_with_apple": "Se connecter avec Apple",
+  "login_with_google": "Se connecter avec Google",
+  "login_with_meta": "Se connecter avec Meta",
+  "no_account": "Vous n'avez pas de compte ?",
+  "signup_now": "Inscrivez-vous",
+  "password": "Mot de passe",
+  "signin": "Connexion",
+  "agree_continue": "En cliquant sur continuer, vous acceptez les <linkt>Conditions d'utilisation</linkt> et la <linkp>Politique de confidentialité</linkp>."
+}

@@ -10,33 +10,158 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("POSTGRES_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
+enum UserRole {
+  SUPPLIER
+  BUYER
+  ADMIN
+}
+
 model User {
-  id           Int       @id @default(autoincrement())
-  name         String?
-  email        String    @unique
-  passwordHash String
-  role         String    @default("buyer")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now())
+  id            String    @id @default(uuid())
+  name          String?
+  passwordHash  String
+  role          String    @default("buyer")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  emailVerified Boolean
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
+
+  phoneNumber         String?
+  phoneNumberVerified Boolean?
+
+  email String
+
+
+  supplierProfile SupplierProfile?
+  buyerProfile BuyerProfile?
+  
+  @@map("user")
+  @@unique([phoneNumber])
+  @@unique([email])
+  
+}
+
+model SupplierProfile {
+  id           String   @id @default(uuid())
+  companyName  String
+  businessCategory String
+  address      String?
+  description  String?
+  logoUrl      String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+
   products     Product[]
 }
 
+model BuyerProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  companyName String?
+  address     String?
+
+  user        User     @relation(fields: [userId], references: [id])
+  inquiries Inquiry[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Product {
-  id               Int      @id @default(autoincrement())
-  name             String
-  description      String?
-  imageUrl         String?
-  category         String?
-  price            Int
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  images         String[]
+  category          String
+  price             Int
   quantityAvailable Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
-  supplier         User     @relation(fields: [supplierId], references: [id])
-  supplierId       Int
+  minOrderQuantity  Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  supplier       SupplierProfile @relation(fields: [supplierId], references: [id])
+  supplierId String
+
+  inquiries Inquiry[]
+
+  @@map("product")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+enum InquiryStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+model Inquiry {
+  id        String   @id @default(uuid())
+  message   String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  status    InquiryStatus
+
+  buyerId   String
+  buyer     BuyerProfile    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inquiries")
 }
 
