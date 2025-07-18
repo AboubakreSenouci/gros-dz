@@ -1,3 +1,6 @@
+"use client"
+
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, Package, X } from "lucide-react";
 import { useState } from "react";
@@ -23,8 +26,8 @@ export const LanguageSelector: React.FC = () => {
     try {
       await i18n.changeLanguage(lng);
       setLanguageCookie(lng);
-    } catch (error) {
-      toast.error(`Failed to change language to ${lng}. Please try again later.`)
+    } catch (_error) {
+      toast.error(`Failed to change language to ${lng}. Please try again later.`);
     } finally {
       setLoading(false);
     }

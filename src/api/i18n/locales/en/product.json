@@ -1,0 +1,39 @@
+{
+  "header": {
+    "title": "Explore Wholesale & Retail Products",
+    "subtitle": "Filter by category, supplier, or price to find the best match for your business needs."
+  },
+  "search": {
+    "placeholder": "Search products..."
+  },
+  "filters": {
+    "button": "Filters",
+    "title": "advanced filters",
+    "price_range": "price range",
+    "min_price": "min price",
+    "max_price": "max price",
+    "apply": "apply filters",
+    "reset": "reset filters",
+    "category": "category",
+    "sort": "sort by"
+  },
+  "loading": "loading products...",
+  "quick_filters": {
+    "price": "Price",
+    "reset": "Reset"
+  },
+  "products": {
+    "showing_results": "showing {{count}} result",
+    "showing_results_plural": "showing {{count}} results"
+  },
+  "product_filters": {
+    "price": {
+      "from_required": "minimum price is required.",
+      "from_invalid": "minimum price must be a number.",
+      "from_min": "minimum price must be at least 0.",
+      "to_required": "maximum price is required.",
+      "to_invalid": "maximum price must be a number.",
+      "to_max": "maximum price must be at most 10000."
+    }
+  }
+}

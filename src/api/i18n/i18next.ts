@@ -62,5 +62,6 @@ export type {
 export {
   I18nCookieKey,
   getI18nInstance,
-  setLanguageCookie
+  setLanguageCookie,
+  dynamicBackend,
 }

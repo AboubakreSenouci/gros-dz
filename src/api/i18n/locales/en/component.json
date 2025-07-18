@@ -1,0 +1,22 @@
+{
+  "category": {
+    "label": "Category",
+    "placeholder": "Category"
+  },
+  "sort": {
+    "label": "Sort By",
+    "placeholder": "Sorting"
+  },
+  "price": {
+    "label": "Price",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply"
+  },
+  "sort_options": {
+    "price_asc": "price: low to high",
+    "price_desc": "price: high to low",
+    "name_asc": "name: a → z",
+    "name_desc": "name: z → a"
+  }
+}
