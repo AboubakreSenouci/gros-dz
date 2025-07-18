@@ -159,9 +159,15 @@ model Product {
 
 model Category {
   id             String        @id @default(uuid())
-  parentCategory Category?  @relation("CategoryToCategory", fields: [categoryId], references: [id])
-  category       Category[] @relation("CategoryToCategory")
-  categoryId     String?
+  name           String
+  nameFrench     String
+  nameArabic     String
+  slug           String
+
+  parentCategory Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
+  parentCategoryId String?
+
+  categories       Category[] @relation("CategoryToCategory")
 
   product Product[] @relation("ProductCategory")
   subProducts Product[] @relation("ProductSubCategory")
