@@ -1,0 +1,22 @@
+{
+  "category": {
+    "label": "Catégorie",
+    "placeholder": "Sélectionnez une catégorie"
+  },
+  "sort": {
+    "label": "Trier par",
+    "placeholder": "Choisir un tri"
+  },
+  "price": {
+    "label": "Prix",
+    "from": "De",
+    "to": "À",
+    "apply": "Appliquer"
+  },
+  "sort_options": {
+    "price_asc": "prix : du plus bas au plus élevé",
+    "price_desc": "prix : du plus élevé au plus bas",
+    "name_asc": "nom : A → Z",
+    "name_desc": "nom : Z → A"
+  }
+}

@@ -1,4 +1,6 @@
-import common from './common.json';
-import home from './home.json';
+import common from "./common.json";
+import home from "./home.json";
+import product from "./product.json";
+import component from "./component.json";
 
-export const AR = { common, home } as const;
+export const AR = { common, home, product, component } as const;
