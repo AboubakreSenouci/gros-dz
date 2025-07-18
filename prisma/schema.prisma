@@ -148,7 +148,7 @@ model Product {
   inquiries            Inquiry[]
   priceVariants        ProductPriceVariant[]
   orders               Order[]
- shortlistedBy        Shortlist[]
+  shortlistedBy        Shortlist[]
 
 
   @@map("product")

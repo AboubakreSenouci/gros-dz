@@ -1,0 +1,17 @@
+{
+  "welcome_back": "مرحباً بعودتك",
+  "login_to_account": "تسجيل الدخول إلى حساب Acme Inc الخاص بك",
+  "forgot_password": "هل نسيت كلمة المرور؟",
+  "login": "تسجيل الدخول",
+  "phone_number_placeholder": "06 98 98 98 98",
+  "phone_number": "رقم الهاتف",
+  "or_continue_with": "أو المتابعة باستخدام",
+  "login_with_apple": "تسجيل الدخول باستخدام أبل",
+  "login_with_google": "تسجيل الدخول باستخدام جوجل",
+  "login_with_meta": "تسجيل الدخول باستخدام ميتا",
+  "no_account": "ليس لديك حساب؟",
+  "signup_now": "سجل الآن",
+  "signin": "تسجيل الدخول",
+  "password": "كلمة المرور",
+  "agree_continue": "بالنقر على متابعة، فإنك توافق على <linkt>شروط الخدمة</linkt> و <linkp>سياسة الخصوصية</linkp> الخاصة بنا."
+}

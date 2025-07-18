@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { setLanguageCookie, SupportedLanguage } from "@/src/api/i18n/i18next";
 import { toast } from "sonner";
 import { Spinner } from "../spinner";
+import Link from "next/link";
 
 export const LanguageSelector: React.FC = () => {
   const { i18n } = useTranslation("common");
@@ -110,7 +111,9 @@ export const Header: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSelector />
             <Button variant="ghost" size="sm">
+              <Link href="/signin">
               {t("login")}
+              </Link>
             </Button>
             <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
               {t("signup")}
