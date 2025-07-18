@@ -8,13 +8,13 @@ const PUBLIC_PATH_PREFIXES = [
 ];
 
 export async function middleware(request: NextRequest) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
+    // const session = await auth.api.getSession({
+    //     headers: await headers()
+    // })
  
-    if(!session) {
-        return NextResponse.redirect(new URL("/signin", request.url));
-    }
+    // if(!session) {
+    //     return NextResponse.redirect(new URL("/signin", request.url));
+    // }
  
     return NextResponse.next();
 }
