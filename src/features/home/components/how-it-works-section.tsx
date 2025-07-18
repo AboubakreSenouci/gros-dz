@@ -6,7 +6,6 @@ import {
   Search,
   Phone,
 } from 'lucide-react';
-import { Header } from '@/src/components';
 import { useTranslation } from 'react-i18next';
 
 

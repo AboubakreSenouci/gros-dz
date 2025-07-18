@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { getI18nInstance } from "@/src/api/i18n/i18next";

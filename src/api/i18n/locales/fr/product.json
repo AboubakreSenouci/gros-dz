@@ -1,0 +1,39 @@
+{
+  "header": {
+    "title": "Explorez les produits en gros et au détail",
+    "subtitle": "Filtrez par catégorie, fournisseur ou prix pour trouver ce qui correspond le mieux à vos besoins professionnels."
+  },
+  "search": {
+    "placeholder": "Rechercher des produits..."
+  },
+  "filters": {
+    "button": "filtres",
+    "title": "filtres avancés",
+    "price_range": "plage de prix",
+    "min_price": "prix minimum",
+    "max_price": "prix maximum",
+    "apply": "appliquer les filtres",
+    "reset": "réinitialiser les filtres",
+    "category": "catégorie",
+    "sort": "trier par"
+  },
+  "loading": "chargement des produits...",
+  "quick_filters": {
+    "price": "prix",
+    "reset": "réinitialiser"
+  },
+  "products": {
+    "showing_results": "affichage de {{count}} résultat",
+    "showing_results_plural": "affichage de {{count}} résultats"
+  },
+  "product_filters": {
+    "price": {
+      "from_required": "le prix minimum est requis.",
+      "from_invalid": "le prix minimum doit être un nombre.",
+      "from_min": "le prix minimum doit être au moins 0.",
+      "to_required": "le prix maximum est requis.",
+      "to_invalid": "le prix maximum doit être un nombre.",
+      "to_max": "le prix maximum doit être au plus 10000."
+    }
+  }
+}

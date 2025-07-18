@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -15,19 +9,48 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+
+/// Enumerations
+
 enum UserRole {
   SUPPLIER
   BUYER
   ADMIN
 }
 
+enum ProductVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum OrderType {
+  PIECE
+  BOX
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  CANCELED
+  DECLINED
+  RETURNED
+  COMPLETED
+}
+
+enum InquiryStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+
 model User {
   id            String    @id @default(uuid())
   name          String?
   passwordHash  String
-  role          String    @default("buyer")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
+  role          UserRole
+
   emailVerified Boolean
   image         String?
   sessions      Session[]
@@ -41,9 +64,14 @@ model User {
   supplierProfile SupplierProfile?
   buyerProfile    BuyerProfile?
 
-  @@map("user")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt    DateTime?
+
   @@unique([phoneNumber])
   @@unique([email])
+  @@map("user")
 }
 
 model SupplierProfile {
@@ -53,13 +81,16 @@ model SupplierProfile {
   address          String?
   description      String?
   logoUrl          String?
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  deletedAt    DateTime?
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
   products Product[]
+  orders   Order[]
 }
 
 model BuyerProfile {
@@ -70,30 +101,110 @@ model BuyerProfile {
 
   user      User      @relation(fields: [userId], references: [id])
   inquiries Inquiry[]
+  orders    Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt    DateTime?
+
+  Shortlist Shortlist[]
 }
 
 model Product {
   id                String   @id @default(uuid())
   name              String
+  nameArabic        String?
   description       String?
   images            String[]
-  category          String
-  price             Int
-  quantityAvailable Int
-  minOrderQuantity  Int
+
+  category             Category               @relation("ProductCategory", fields: [categoryId], references: [id])
+  categoryId           String
+  subCategory          Category?               @relation("ProductSubCategory", fields: [subCategoryId], references: [id])
+  subCategoryId        String?
+
+  price                Int
+  quantityAvailable    Int
+  minOrderQuantity     Int
+
+  visibility           ProductVisibility        @default(PUBLIC)
+
+  isDeliveryAvailable  Boolean                  @default(true)
+  isSampleAvailable    Boolean                  @default(false)
+  samplePrice          Int?
+
+  orderType            OrderType
+  numberOfPiecesPerBox Int?
+  rating               Int                      @default(0)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  deletedAt    DateTime?
 
   supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
   supplierId String
 
-  inquiries Inquiry[]
+
+  inquiries            Inquiry[]
+  priceVariants        ProductPriceVariant[]
+  orders               Order[]
+  shortlistedBy        Shortlist[]
+
 
   @@map("product")
+}
+
+model Category {
+  id             String        @id @default(uuid())
+  name           String
+  nameFrench     String
+  nameArabic     String
+  slug           String
+
+  parentCategory Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
+  parentCategoryId String?
+
+  categories       Category[] @relation("CategoryToCategory")
+
+  product Product[] @relation("ProductCategory")
+  subProducts Product[] @relation("ProductSubCategory")
+}
+
+model ProductPriceVariant {
+  id        String  @id @default(uuid())
+  quantity  Int
+  price     Int
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  deletedAt    DateTime?
+
+  @@map("product_price_variant")
+}
+
+model Order {
+  id                    String      @id @default(uuid())
+  orderNumber           String      @unique
+  quantity              Int
+  totalPrice            Int
+  shippingDeliveryPrice Int         @default(0)
+  status                OrderStatus
+  paymentMethod         String
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  buyerId String
+  buyer   BuyerProfile @relation(fields: [buyerId], references: [id])
+
+  supplierId String
+  supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
+
+  @@map("order")
 }
 
 model Session {
@@ -141,13 +252,6 @@ model Verification {
   @@map("verification")
 }
 
-enum InquiryStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  CLOSED
-}
-
 model Inquiry {
   id        String        @id @default(uuid())
   message   String?
@@ -163,4 +267,17 @@ model Inquiry {
   @@map("inquiries")
 }
 
+model Shortlist {
+  id        String       @id @default(uuid())
+  
+  buyer     BuyerProfile @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId   String
 
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("shortlist")
+}

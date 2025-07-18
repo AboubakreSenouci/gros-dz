@@ -1,33 +1,75 @@
-import Link from "next/link";
+"use client";
 
-export default async function ProductListPage() {
-  const res = await fetch(`${process.env.BASE_URL}/api/product`, {
-    cache: "no-store",
-  });
-  const products = await res.json();
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useDebounce } from "@/hooks/use-debounce";
+import LoadingSpinner from "@/components/ui/loading-spinner";
+import {
+  ProductListFilters,
+  ProductListGrid,
+  ProductListHeader,
+  useProductFiltersState,
+} from "@/src/features/product/product-list";
+
+export default function ProductListPage() {
+  const { t } = useTranslation("product");
+  const {
+    loading,
+    filters,
+    handleFilterChange,
+    resetFilters,
+    filteredProducts,
+    appliedFilterCount,
+  } = useProductFiltersState();
+
+  const [searchValue, setSearchValue] = useState(filters.search ?? "");
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  const stableHandleFilterChange = useCallback(handleFilterChange, []);
+
+  useEffect(() => {
+    if (debouncedSearch !== filters.search) {
+      stableHandleFilterChange({ search: debouncedSearch });
+    }
+  }, [debouncedSearch, stableHandleFilterChange, filters.search]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value);
+  };
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Product List</h1>
-      <ul className="space-y-3">
-        {products.map((product: any) => (
-          <li key={product.id} className="border p-4 rounded">
-            <Link
-              href={`/products/${product.id}`}
-              className="text-blue-600 font-medium"
-            >
-              {product.name}
-            </Link>
-            <p className="text-gray-600">Price: ${product.price}</p>
-            <Link
-              href={`/suppliers/${product.supplierId}`}
-              className="text-sm text-gray-500 underline"
-            >
-              View Supplier
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className="bg-gray-100">
+      <main className="p-6 max-w-7xl mx-auto">
+        <ProductListHeader />
+
+        <div className="mb-10">
+          <input
+            type="text"
+            placeholder={t("search.placeholder")}
+            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            value={searchValue}
+            onChange={handleSearchChange}
+          />
+        </div>
+
+        <div className="bg-white p-8 rounded-3xl">
+          <ProductListFilters
+            appliedFilterCount={appliedFilterCount}
+            filters={filters}
+            handleFilterChange={stableHandleFilterChange}
+            resetFilters={resetFilters}
+          />
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <LoadingSpinner size={20} />
+              <p className="text-center text-gray-500 mt-6">{t("loading")}</p>
+            </div>
+          ) : (
+            <ProductListGrid products={filteredProducts} />
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

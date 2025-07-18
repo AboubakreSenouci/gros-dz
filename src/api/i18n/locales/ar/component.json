@@ -1,0 +1,22 @@
+{
+  "category": {
+    "label": "الفئة",
+    "placeholder": "اختر الفئة"
+  },
+  "sort": {
+    "label": "ترتيب حسب",
+    "placeholder": "اختر طريقة الترتيب"
+  },
+  "price": {
+    "label": "السعر",
+    "from": "من",
+    "to": "إلى",
+    "apply": "تطبيق"
+  },
+  "sort_options": {
+    "price_asc": "السعر: من الأقل إلى الأعلى",
+    "price_desc": "السعر: من الأعلى إلى الأقل",
+    "name_asc": "الاسم: أ → ي",
+    "name_desc": "الاسم: ي → أ"
+  }
+}

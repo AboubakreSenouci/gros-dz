@@ -6,7 +6,7 @@ export default async function SupplierPage({
   params: { id: string };
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/supplier/${params.id}`,
+    `${process.env.BASE_URL}/api/supplier/${params.id}`,
     {
       cache: "no-store",
     }
