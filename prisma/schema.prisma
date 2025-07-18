@@ -38,51 +38,48 @@ model User {
 
   email String
 
-
   supplierProfile SupplierProfile?
-  buyerProfile BuyerProfile?
-  
+  buyerProfile    BuyerProfile?
+
   @@map("user")
   @@unique([phoneNumber])
   @@unique([email])
-  
 }
 
 model SupplierProfile {
-  id           String   @id @default(uuid())
-  companyName  String
+  id               String   @id @default(uuid())
+  companyName      String
   businessCategory String
-  address      String?
-  description  String?
-  logoUrl      String?
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  address          String?
+  description      String?
+  logoUrl          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
-  products     Product[]
+  products Product[]
 }
 
 model BuyerProfile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
+  id          String  @id @default(uuid())
+  userId      String  @unique
   companyName String?
   address     String?
 
-  user        User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
   inquiries Inquiry[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
   id                String   @id @default(uuid())
   name              String
   description       String?
-  images         String[]
+  images            String[]
   category          String
   price             Int
   quantityAvailable Int
@@ -91,7 +88,7 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  supplier       SupplierProfile @relation(fields: [supplierId], references: [id])
+  supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
   supplierId String
 
   inquiries Inquiry[]
@@ -150,18 +147,20 @@ enum InquiryStatus {
   REJECTED
   CLOSED
 }
+
 model Inquiry {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   message   String?
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
   status    InquiryStatus
 
-  buyerId   String
-  buyer     BuyerProfile    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId String
+  buyer   BuyerProfile @relation(fields: [buyerId], references: [id], onDelete: Cascade)
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("inquiries")
 }
+
 
