@@ -12,19 +12,48 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+
+/// Enumerations
+
 enum UserRole {
   SUPPLIER
   BUYER
   ADMIN
 }
 
+enum ProductVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum OrderType {
+  PIECE
+  BOX
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  CANCELED
+  DECLINED
+  RETURNED
+  COMPLETED
+}
+
+enum InquiryStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+
 model User {
   id            String    @id @default(uuid())
   name          String?
   passwordHash  String
-  role          String    @default("buyer")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
+  role          UserRole
+
   emailVerified Boolean
   image         String?
   sessions      Session[]
@@ -38,7 +67,10 @@ model User {
   supplierProfile SupplierProfile?
   buyerProfile    BuyerProfile?
 
-  orders Order[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt    DateTime?
 
   @@unique([phoneNumber])
   @@unique([email])
@@ -52,8 +84,10 @@ model SupplierProfile {
   address          String?
   description      String?
   logoUrl          String?
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  deletedAt    DateTime?
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
@@ -74,35 +108,66 @@ model BuyerProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt    DateTime?
+
+  Shortlist Shortlist[]
 }
 
 model Product {
   id                String   @id @default(uuid())
   name              String
+  nameArabic        String?
   description       String?
   images            String[]
-  category          String
-  price             Int
-  basePrice         Int?     @default(0)
-  quantityAvailable Int
-  minOrderQuantity  Int
-  isVisible         Boolean  @default(true)
-  deliveryPossible  Boolean  @default(true)
+
+  category             Category               @relation("ProductCategory", fields: [categoryId], references: [id])
+  categoryId           String
+  subCategory          Category?               @relation("ProductSubCategory", fields: [subCategoryId], references: [id])
+  subCategoryId        String?
+
+  price                Int
+  quantityAvailable    Int
+  minOrderQuantity     Int
+
+  visibility           ProductVisibility        @default(PUBLIC)
+
+  isDeliveryAvailable  Boolean                  @default(true)
+  isSampleAvailable    Boolean                  @default(false)
+  samplePrice          Int?
+
+  orderType            OrderType
+  numberOfPiecesPerBox Int?
+  rating               Int                      @default(0)
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  deletedAt    DateTime?
 
   supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
   supplierId String
 
-  inquiries     Inquiry[]
-  priceVariants PriceVariant[]
-  orders        Order[]
+
+  inquiries            Inquiry[]
+  priceVariants        ProductPriceVariant[]
+  orders               Order[]
+ shortlistedBy        Shortlist[]
+
 
   @@map("product")
 }
 
-model PriceVariant {
+model Category {
+  id             String        @id @default(uuid())
+  parentCategory Category?  @relation("CategoryToCategory", fields: [categoryId], references: [id])
+  category       Category[] @relation("CategoryToCategory")
+  categoryId     String?
+
+  product Product[] @relation("ProductCategory")
+  subProducts Product[] @relation("ProductSubCategory")
+}
+
+model ProductPriceVariant {
   id        String  @id @default(uuid())
   quantity  Int
   price     Int
@@ -110,9 +175,10 @@ model PriceVariant {
   product   Product @relation(fields: [productId], references: [id])
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
+  deletedAt    DateTime?
 
-  @@map("price_variant")
+  @@map("product_price_variant")
 }
 
 model Order {
@@ -135,20 +201,7 @@ model Order {
   supplierId String
   supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
   @@map("order")
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  DELIVERED
-  CANCELED
-  DECLINED
-  RETURNED
-  COMPLETED
 }
 
 model Session {
@@ -196,13 +249,6 @@ model Verification {
   @@map("verification")
 }
 
-enum InquiryStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  CLOSED
-}
-
 model Inquiry {
   id        String        @id @default(uuid())
   message   String?
@@ -216,4 +262,19 @@ model Inquiry {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("inquiries")
+}
+
+model Shortlist {
+  id        String       @id @default(uuid())
+  
+  buyer     BuyerProfile @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId   String
+
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("shortlist")
 }
