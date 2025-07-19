@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Product` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('SUPPLIER', 'BUYER', 'ADMIN');
 
@@ -19,15 +12,6 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'DELIVERED', 'CANCEL
 
 -- CreateEnum
 CREATE TYPE "InquiryStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CLOSED');
-
--- DropForeignKey
-ALTER TABLE "Product" DROP CONSTRAINT "Product_supplierId_fkey";
-
--- DropTable
-DROP TABLE "Product";
-
--- DropTable
-DROP TABLE "User";
 
 -- CreateTable
 CREATE TABLE "user" (
@@ -106,7 +90,11 @@ CREATE TABLE "product" (
 -- CreateTable
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
-    "categoryId" TEXT,
+    "name" TEXT NOT NULL,
+    "nameFrench" TEXT NOT NULL,
+    "nameArabic" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "parentCategoryId" TEXT,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
@@ -244,7 +232,7 @@ ALTER TABLE "product" ADD CONSTRAINT "product_subCategoryId_fkey" FOREIGN KEY ("
 ALTER TABLE "product" ADD CONSTRAINT "product_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "SupplierProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Category" ADD CONSTRAINT "Category_parentCategoryId_fkey" FOREIGN KEY ("parentCategoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product_price_variant" ADD CONSTRAINT "product_price_variant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

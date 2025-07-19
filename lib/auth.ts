@@ -1,34 +1,62 @@
 import { betterAuth } from "better-auth";
-import { phoneNumber } from "better-auth/plugins";
+import { customSession, phoneNumber } from "better-auth/plugins";
 import { prisma } from "./prisma";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
+import { resend } from "./resend.client";
 
-const WHATSAPP_API = 'https://graph.facebook.com/v22.0/693405723860387/messages';
 const getWhatsappPayload = (to: string, message: string) => ({
     'message_product': 'whatsapp',
     'type': 'template',
+    "recipient_type": "individual",
     to,
     'template': {
-        'name': message,
+        'name': 'otp',
         'language': {
             'code': 'en_US'
-        }
+        },
+        'components': [{
+            'type': 'body',
+            'parameters': [
+                { type: 'text', text: message }
+            ]
+        }]
     }
 });
 
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-        provider: "postgresql"
+    database: prismaAdapter(prisma, {
+        provider: "postgresql",
+        debugLogs: true
     }),
+    emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: true,
+    },
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 5 * 60, // in minutes
+        }
+    },
+    emailVerification: {
+        sendVerificationEmail: async ({ user, url }) => {
+            resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to: user.email,
+                subject: 'Verify your email address',
+                text: `Click the link to verify your email: ${url}`,
+            });
+        },
+    },
     plugins: [
-        phoneNumber({  
-            sendOTP: ({ phoneNumber, code }: { phoneNumber: string; code: string}, request: Request) => { 
+        phoneNumber({
+            sendOTP: ({ phoneNumber, code }: { phoneNumber: string; code: string }) => {
                 const payload = getWhatsappPayload(phoneNumber, code);
                 const seriliazedPayload = JSON.stringify(payload);
 
-                fetch(WHATSAPP_API, {
+                fetch(process.env.WHATSAPP_API, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -48,7 +76,37 @@ export const auth = betterAuth({
             },
             otpLength: 6,
         }),
-        
+
+        customSession(async ({ user, session }) => {
+            const response = await prisma.user.findUnique({
+                where: {
+                    id: user.id,
+                },
+                select: {
+                    role: true,
+                    supplierProfile: {
+                        select: {
+                            id: true
+                        }
+                    },
+                    buyerProfile: {
+                        select: {
+                            id: true
+                        }
+                    },
+                },
+            });
+
+            return {
+                user: {
+                    ...user,
+                    role: response?.role,
+                    supplierId: response?.supplierProfile?.id,
+                    buyerId: response?.buyerProfile?.id,
+                },
+                session,
+            }
+        }),
         // Make sure this is the last plugin in the array
         nextCookies(),
     ]
