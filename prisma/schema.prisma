@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -50,7 +49,7 @@ model Address {
   province String
   city     String
   street   String
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -62,22 +61,22 @@ model Address {
 
 model User {
   id           String   @id @default(uuid())
-  name         String? 
+  name         String?
   passwordHash String
   role         UserRole
 
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
+  image    String?
+  sessions Session[]
+  accounts Account[]
 
   phoneNumber         String?
   phoneNumberVerified Boolean?
 
-  email String
+  email         String
   emailVerified Boolean
 
-  companyId String
-  company   Company @relation("CompanyUsers", fields: [companyId], references: [id])
+  companyId String?
+  company  Company? @relation("CompanyUsers", fields: [companyId], references: [id])
 
   Company Company[]
 
@@ -90,35 +89,33 @@ model User {
   @@map("user")
 }
 
-
 model Company {
-  id           String   @id @default(uuid())
-  name         String
-  description  String?
-  logoUrl      String?
-  
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  logoUrl     String?
+
   categoryId String?
-  category Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
 
   addressId String?
-  address  Address? @relation("CompanyAddress", fields: [addressId], references: [id])
+  address   Address? @relation("CompanyAddress", fields: [addressId], references: [id])
 
   deliveryAddresses Address[] @relation("CompanyDeliveryAddress")
 
   users User[] @relation("CompanyUsers")
 
-  owner User @relation(fields: [ownerId], references: [id])
+  owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String @unique
-  
-  products Product[]
+
+  products  Product[]
   shortlist Shortlist[]
 
-  buyerOrders Order[] @relation("BuyerCompanyOrders")
+  buyerOrders    Order[] @relation("BuyerCompanyOrders")
   supplierOrders Order[] @relation("SupplierCompanyOrders")
 
-
   createdAt DateTime  @default(now())
-  updatedAt DateTime?  @updatedAt
+  updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 
   @@map("company")
@@ -264,9 +261,8 @@ model Verification {
   @@map("verification")
 }
 
-
 model Shortlist {
-  id      String       @id @default(uuid())
+  id        String  @id @default(uuid())
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
 
@@ -278,4 +274,11 @@ model Shortlist {
 
   @@unique([companyId, productId], name: "companyId_productId")
   @@map("shortlist")
+}
+
+model OrderCounter {
+  id         Int @id @default(1)
+  lastNumber Int
+
+  @@map("order_counter")
 }
