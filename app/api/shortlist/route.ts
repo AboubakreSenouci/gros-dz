@@ -1,4 +1,5 @@
 
+import { UserRole } from '@/generated/prisma'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PaginationSchema } from '@/src/shared/schema-validation.helpers'
@@ -17,11 +18,10 @@ export default async function GET(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const user = session.user;
-    if (!user.role) {
+    if (!user.role || user.role !== UserRole.BUYER) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
-
-    const buyerId = user.buyerId;
+    const buyerId = user.id;
 
     const parsedQueryParams = await PaginationSchema.safeParseAsync(req.query);
     if (!parsedQueryParams.success) {
@@ -35,7 +35,22 @@ export default async function GET(req: NextApiRequest, res: NextApiResponse) {
 
     const shortlistProducts = await prisma.shortlist.findMany({
       where: {
-        buyerId,
+        OR: [
+            {
+              company: {
+                ownerId: buyerId,
+              }
+            },
+            {
+              company: {
+                users: {
+                  some: {
+                    id: buyerId,
+                  }
+                },
+              }
+            }
+        ],
       },
       orderBy: [{
         createdAt: 'desc',

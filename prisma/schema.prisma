@@ -45,13 +45,27 @@ enum InquiryStatus {
   CLOSED
 }
 
+model Address {
+  id       String @id @default(uuid())
+  province String
+  city     String
+  street   String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company                  Company[] @relation("CompanyAddress")
+  companyDeliveryAddresses Company[] @relation("CompanyDeliveryAddress")
+
+  @@map("address")
+}
+
 model User {
   id           String   @id @default(uuid())
-  name         String?
+  name         String? 
   passwordHash String
   role         UserRole
 
-  emailVerified Boolean
   image         String?
   sessions      Session[]
   accounts      Account[]
@@ -60,9 +74,12 @@ model User {
   phoneNumberVerified Boolean?
 
   email String
+  emailVerified Boolean
 
-  supplierProfile SupplierProfile?
-  buyerProfile    BuyerProfile?
+  companyId String
+  company   Company @relation("CompanyUsers", fields: [companyId], references: [id])
+
+  Company Company[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now())
@@ -73,40 +90,38 @@ model User {
   @@map("user")
 }
 
-model SupplierProfile {
-  id               String  @id @default(uuid())
-  companyName      String
-  businessCategory String
-  address          String?
-  description      String?
-  logoUrl          String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+model Company {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  logoUrl      String?
+  
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  addressId String?
+  address  Address? @relation("CompanyAddress", fields: [addressId], references: [id])
 
+  deliveryAddresses Address[] @relation("CompanyDeliveryAddress")
+
+  users User[] @relation("CompanyUsers")
+
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId String @unique
+  
   products Product[]
-  orders   Order[]
-}
+  shortlist Shortlist[]
 
-model BuyerProfile {
-  id          String  @id @default(uuid())
-  userId      String  @unique
-  companyName String?
-  address     String?
+  buyerOrders Order[] @relation("BuyerCompanyOrders")
+  supplierOrders Order[] @relation("SupplierCompanyOrders")
 
-  user      User      @relation(fields: [userId], references: [id])
-  inquiries Inquiry[]
-  orders    Order[]
 
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime?  @updatedAt
   deletedAt DateTime?
 
-  Shortlist Shortlist[]
+  @@map("company")
 }
 
 model Product {
@@ -139,10 +154,9 @@ model Product {
   updatedAt DateTime  @default(now())
   deletedAt DateTime?
 
-  supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
-  supplierId String
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String
 
-  inquiries     Inquiry[]
   priceVariants ProductPriceVariant[]
   orders        Order[]
   shortlistedBy Shortlist[]
@@ -164,6 +178,8 @@ model Category {
 
   product     Product[] @relation("ProductCategory")
   subProducts Product[] @relation("ProductSubCategory")
+
+  Company Company[]
 }
 
 model ProductPriceVariant {
@@ -194,11 +210,11 @@ model Order {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
-  buyerId String
-  buyer   BuyerProfile @relation(fields: [buyerId], references: [id])
+  buyerCompanyId String
+  buyerCompany   Company @relation("BuyerCompanyOrders", fields: [buyerCompanyId], references: [id])
 
-  supplierId String
-  supplier   SupplierProfile @relation(fields: [supplierId], references: [id])
+  supplierCompanyId String
+  supplierCompany   Company @relation("SupplierCompanyOrders", fields: [supplierCompanyId], references: [id])
 
   @@map("order")
 }
@@ -248,25 +264,11 @@ model Verification {
   @@map("verification")
 }
 
-model Inquiry {
-  id        String        @id @default(uuid())
-  message   String?
-  createdAt DateTime      @default(now()) @db.Timestamptz(6)
-  status    InquiryStatus
-
-  buyerId String
-  buyer   BuyerProfile @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@map("inquiries")
-}
 
 model Shortlist {
   id      String       @id @default(uuid())
-  buyer   BuyerProfile @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-  buyerId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String

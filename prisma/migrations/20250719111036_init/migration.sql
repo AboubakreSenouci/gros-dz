@@ -14,16 +14,29 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'DELIVERED', 'CANCEL
 CREATE TYPE "InquiryStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CLOSED');
 
 -- CreateTable
+CREATE TABLE "address" (
+    "id" TEXT NOT NULL,
+    "province" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "street" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "address_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "user" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "passwordHash" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
-    "emailVerified" BOOLEAN NOT NULL,
     "image" TEXT,
     "phoneNumber" TEXT,
     "phoneNumberVerified" BOOLEAN,
     "email" TEXT NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL,
+    "companyId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
@@ -32,32 +45,19 @@ CREATE TABLE "user" (
 );
 
 -- CreateTable
-CREATE TABLE "SupplierProfile" (
+CREATE TABLE "company" (
     "id" TEXT NOT NULL,
-    "companyName" TEXT NOT NULL,
-    "businessCategory" TEXT NOT NULL,
-    "address" TEXT,
+    "name" TEXT NOT NULL,
     "description" TEXT,
     "logoUrl" TEXT,
+    "categoryId" TEXT,
+    "addressId" TEXT,
+    "ownerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-    "userId" TEXT NOT NULL,
-
-    CONSTRAINT "SupplierProfile_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "BuyerProfile" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "companyName" TEXT,
-    "address" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3),
     "deletedAt" TIMESTAMP(3),
 
-    CONSTRAINT "BuyerProfile_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "company_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -82,7 +82,7 @@ CREATE TABLE "product" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
-    "supplierId" TEXT NOT NULL,
+    "companyId" TEXT NOT NULL,
 
     CONSTRAINT "product_pkey" PRIMARY KEY ("id")
 );
@@ -124,8 +124,8 @@ CREATE TABLE "order" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "productId" TEXT NOT NULL,
-    "buyerId" TEXT NOT NULL,
-    "supplierId" TEXT NOT NULL,
+    "buyerCompanyId" TEXT NOT NULL,
+    "supplierCompanyId" TEXT NOT NULL,
 
     CONSTRAINT "order_pkey" PRIMARY KEY ("id")
 );
@@ -176,26 +176,22 @@ CREATE TABLE "verification" (
 );
 
 -- CreateTable
-CREATE TABLE "inquiries" (
-    "id" TEXT NOT NULL,
-    "message" TEXT,
-    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "status" "InquiryStatus" NOT NULL,
-    "buyerId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
-
-    CONSTRAINT "inquiries_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "shortlist" (
     "id" TEXT NOT NULL,
-    "buyerId" TEXT NOT NULL,
+    "companyId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "shortlist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_CompanyDeliveryAddress" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_CompanyDeliveryAddress_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -205,10 +201,7 @@ CREATE UNIQUE INDEX "user_phoneNumber_key" ON "user"("phoneNumber");
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SupplierProfile_userId_key" ON "SupplierProfile"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "BuyerProfile_userId_key" ON "BuyerProfile"("userId");
+CREATE UNIQUE INDEX "company_ownerId_key" ON "company"("ownerId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "order_orderNumber_key" ON "order"("orderNumber");
@@ -216,11 +209,20 @@ CREATE UNIQUE INDEX "order_orderNumber_key" ON "order"("orderNumber");
 -- CreateIndex
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
 
--- AddForeignKey
-ALTER TABLE "SupplierProfile" ADD CONSTRAINT "SupplierProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "_CompanyDeliveryAddress_B_index" ON "_CompanyDeliveryAddress"("B");
 
 -- AddForeignKey
-ALTER TABLE "BuyerProfile" ADD CONSTRAINT "BuyerProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "user" ADD CONSTRAINT "user_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "company" ADD CONSTRAINT "company_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "company" ADD CONSTRAINT "company_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "company" ADD CONSTRAINT "company_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product" ADD CONSTRAINT "product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -229,7 +231,7 @@ ALTER TABLE "product" ADD CONSTRAINT "product_categoryId_fkey" FOREIGN KEY ("cat
 ALTER TABLE "product" ADD CONSTRAINT "product_subCategoryId_fkey" FOREIGN KEY ("subCategoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product" ADD CONSTRAINT "product_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "SupplierProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "product" ADD CONSTRAINT "product_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentCategoryId_fkey" FOREIGN KEY ("parentCategoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -241,10 +243,10 @@ ALTER TABLE "product_price_variant" ADD CONSTRAINT "product_price_variant_produc
 ALTER TABLE "order" ADD CONSTRAINT "order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order" ADD CONSTRAINT "order_buyerId_fkey" FOREIGN KEY ("buyerId") REFERENCES "BuyerProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "order" ADD CONSTRAINT "order_buyerCompanyId_fkey" FOREIGN KEY ("buyerCompanyId") REFERENCES "company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order" ADD CONSTRAINT "order_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "SupplierProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "order" ADD CONSTRAINT "order_supplierCompanyId_fkey" FOREIGN KEY ("supplierCompanyId") REFERENCES "company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -253,13 +255,13 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_buyerId_fkey" FOREIGN KEY ("buyerId") REFERENCES "BuyerProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "shortlist" ADD CONSTRAINT "shortlist_buyerId_fkey" FOREIGN KEY ("buyerId") REFERENCES "BuyerProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shortlist" ADD CONSTRAINT "shortlist_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "shortlist" ADD CONSTRAINT "shortlist_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CompanyDeliveryAddress" ADD CONSTRAINT "_CompanyDeliveryAddress_A_fkey" FOREIGN KEY ("A") REFERENCES "address"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_CompanyDeliveryAddress" ADD CONSTRAINT "_CompanyDeliveryAddress_B_fkey" FOREIGN KEY ("B") REFERENCES "company"("id") ON DELETE CASCADE ON UPDATE CASCADE;

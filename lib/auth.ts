@@ -84,16 +84,6 @@ export const auth = betterAuth({
                 },
                 select: {
                     role: true,
-                    supplierProfile: {
-                        select: {
-                            id: true
-                        }
-                    },
-                    buyerProfile: {
-                        select: {
-                            id: true
-                        }
-                    },
                 },
             });
 
@@ -101,8 +91,6 @@ export const auth = betterAuth({
                 user: {
                     ...user,
                     role: response?.role,
-                    supplierId: response?.supplierProfile?.id,
-                    buyerId: response?.buyerProfile?.id,
                 },
                 session,
             }
