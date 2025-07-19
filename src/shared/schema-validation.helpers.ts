@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod'
 
-
 export const PaginationSchema = z.object({
   page: z
     .string()
@@ -16,9 +15,13 @@ export const PaginationSchema = z.object({
     .refine((val) => val > 0 && val <= 100, {
       message: 'PageSize must be between 1 and 100',
     }),
-}).optional();
+});
 
-export type PaginationParams = z.infer<typeof PaginationSchema>
+export type BasePaginationParams = z.infer<typeof PaginationSchema>;
+
+export function createPaginationSchema<T extends z.ZodRawShape>(extension: T) {
+  return PaginationSchema.extend(extension);
+}
 
 export async function parseSearchParams<T extends z.ZodTypeAny>(
   schema: T,

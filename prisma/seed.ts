@@ -17,71 +17,101 @@ async function hashToBase64(data: string): Promise<string> {
 // ==============================================
 // SEED 1: SUPPLIERS
 // ==============================================
-async function seedSuppliers() {
-  const NUMBER_OF_SUPPLIERS = 10;
-  const COMMON_PASSWORD = "Supplier@123";
-  const ALGERIAN_PHONE_PREFIX = "+213";
 
-  async function createSuppliersData() {
-    const suppliers = [];
-    for (let i = 0; i < NUMBER_OF_SUPPLIERS; i++) {
-      const firstName = faker.person.firstName();
-      const lastName = faker.person.lastName();
-      const email = faker.internet.email({
-        firstName,
-        lastName,
-        provider: "supplier.dz",
-      });
-      const phoneNumber = `${ALGERIAN_PHONE_PREFIX}${faker.string.numeric(9)}`;
-      const passwordHash = await hashToBase64(COMMON_PASSWORD);
+const COMMON_PASSWORD = "Password@123";
+const ALGERIAN_PHONE_PREFIX = "+213";
+const NUMBER_OF_SUPPLIERS = 10;
+const NUMBER_OF_BUYERS = 10;
 
-      suppliers.push({
-        user: {
-          name: `${firstName} ${lastName}`,
-          email,
-          passwordHash,
-          role: UserRole.SUPPLIER,
-          emailVerified: true,
-          phoneNumber,
-          phoneNumberVerified: true,
-          image: faker.image.avatar(),
-        },
-        supplierProfile: {
-          companyName: faker.company.name(),
-          businessCategory: faker.commerce.department(),
-          address: `${faker.location.streetAddress()}, ${faker.location.city()}, Algeria`,
-          description: `Professional ${faker.commerce.department()} supplier with ${faker.number.int({ min: 2, max: 20 })} years of experience. ${faker.lorem.paragraph()}`,
-          logoUrl: faker.image.urlLoremFlickr({ category: "business" }),
-        },
-      });
-    }
-    return suppliers;
+async function createAddress() {
+  return await prisma.address.create({
+    data: {
+      province: faker.location.state(),
+      city: faker.location.city(),
+      street: faker.location.streetAddress(),
+    },
+  });
+}
+
+async function createUserWithCompany(role: UserRole) {
+  const firstName = faker.person.firstName();
+  const lastName = faker.person.lastName();
+  const email = faker.internet.email({
+    firstName,
+    lastName,
+    provider: `${role.toLowerCase()}.dz`,
+  });
+  const phoneNumber = `${ALGERIAN_PHONE_PREFIX}${faker.string.numeric(9)}`;
+  const passwordHash = await hashToBase64(COMMON_PASSWORD);
+  const address = await createAddress();
+
+  const companyName = faker.company.name();
+  const description = `Leading ${faker.commerce.department()} company.`;
+  const logoUrl = faker.image.avatar();
+
+  let user: Awaited<ReturnType<typeof prisma.user.create>> | undefined;
+  let company: Awaited<ReturnType<typeof prisma.company.create>> | undefined;
+
+  await prisma.$transaction(async (tx) => {
+    // Step 1: Create the user without companyId
+    user = await tx.user.create({
+      data: {
+        name: `${firstName} ${lastName}`,
+        email,
+        passwordHash,
+        role,
+        phoneNumber,
+        phoneNumberVerified: true,
+        emailVerified: true,
+        image: faker.image.avatar(),
+      },
+    });
+
+    // Step 2: Create the company with ownerId = user.id
+    company = await tx.company.create({
+      data: {
+        name: companyName,
+        description,
+        logoUrl,
+        addressId: address.id,
+        ownerId: user.id,
+      },
+    });
+
+    // Step 3: Update the user to set companyId
+    await tx.user.update({
+      where: { id: user.id },
+      data: { companyId: company.id },
+    });
+  });
+
+  if (!user || !company) {
+    console.log("error");
   }
 
-  console.log("Starting supplier seed...");
-  const suppliersData = await createSuppliersData();
+  // Update company to assign ownerId
+  await prisma.company.update({
+    where: { id: company!.id },
+    data: {
+      ownerId: user!.id,
+    },
+  });
 
-  console.log("\nSample supplier data:");
-  console.log(JSON.stringify(suppliersData[0], null, 2));
+  return { user, company };
+}
 
-  for (const data of suppliersData) {
-    try {
-      const user = await prisma.user.create({
-        data: {
-          ...data.user,
-          supplierProfile: {
-            create: data.supplierProfile,
-          },
-        },
-        include: {
-          supplierProfile: true,
-        },
-      });
-      console.log(`Created supplier: ${user.email}`);
-    } catch (error) {
-      console.error(`Error creating supplier:`, error);
-    }
+export async function seedSuppliersAndBuyers() {
+  console.log("🌱 Seeding suppliers and buyers...");
+
+  for (let i = 0; i < NUMBER_OF_SUPPLIERS; i++) {
+    await createUserWithCompany(UserRole.SUPPLIER);
   }
+
+  for (let i = 0; i < NUMBER_OF_BUYERS; i++) {
+    await createUserWithCompany(UserRole.BUYER);
+  }
+
+  console.log("✅ Seeding completed.");
 }
 
 // ==============================================
@@ -152,21 +182,24 @@ async function seedCategories() {
 // SEED 3: PRODUCTS
 // ==============================================
 async function seedProducts() {
-  const Data = JSON.parse(
+  const data = JSON.parse(
     readFileSync(path.join(__dirname, "products.json"), "utf-8")
   );
-  const slice = Data.results.slice(0, 200);
+  const slice = data.results.slice(0, 200);
 
-  const suppliers = await prisma.supplierProfile.findMany({
+  // Get all supplier companies
+  const companies = await prisma.company.findMany({
     select: { id: true },
   });
-  const supplierIds = suppliers.map((s) => s.id);
 
+  const companyIds = companies.map((c) => c.id);
+
+  // Get all categories
   const categories = await prisma.category.findMany({
     select: { id: true, name: true },
   });
 
-  const toCreate = [] as Array<{
+  const toCreate: Array<{
     name: string;
     nameArabic: string | null;
     description: string | null;
@@ -182,80 +215,67 @@ async function seedProducts() {
     orderType: OrderType;
     numberOfPiecesPerBox?: number;
     rating: number;
-    supplierId: string;
-  }>;
+    companyId: string;
+  }> = [];
 
-  supplierIds.forEach((supplierId, idx) => {
+  companyIds.forEach((companyId, idx) => {
     const start = idx * 10;
     const chunk = slice.slice(start, start + 10);
 
-    interface ProductImage {
-      image: string;
-    }
-
-    interface CategoryDetails {
-      name: string;
-      name_ar: string | null;
-    }
-
-    interface ProductChunkItem {
-      id: string;
-      title: string;
-      category_details: CategoryDetails;
-      description: string | null;
-      images: ProductImage[];
-      price: number;
-      min_quantity: number;
-      ask_for_sample: boolean;
-      sample_price?: number;
-      order_type: string;
-      pieces_per_box?: number;
-      rating: number;
-    }
-
-    chunk.forEach((p: ProductChunkItem) => {
-      const categoryName: string = p.category_details.name;
-      const category = categories.find((c) => c.name === categoryName);
+    chunk.forEach((p: any) => {
+      const category = categories.find(
+        (c) => c.name === p.category_details.name
+      );
 
       if (!category) {
-      console.warn(
-        `Skipping product ${p.id}: category "${categoryName}" not found.`
-      );
-      return;
+        console.warn(
+          `Skipping product ${p.id}: category "${p.category_details.name}" not found.`
+        );
+        return;
       }
 
       toCreate.push({
-      name: p.title,
-      nameArabic: p.category_details.name_ar,
-      description: p.description,
-      images: p.images.map((img: ProductImage) => img.image),
-      categoryId: category.id,
-      price: p.price * 100,
-      quantityAvailable: Math.floor(Math.random() * (5000 - 500 + 1)) + 500,
-      minOrderQuantity: p.min_quantity,
-      visibility: ProductVisibility.PUBLIC,
-      isDeliveryAvailable: true,
-      isSampleAvailable: p.ask_for_sample,
-      samplePrice: p.sample_price ? p.sample_price * 100 : undefined,
-      orderType: p.order_type.toUpperCase() as OrderType,
-      numberOfPiecesPerBox: p.pieces_per_box ?? undefined,
-      rating: p.rating,
-      supplierId: supplierId,
+        name: p.title,
+        nameArabic: p.category_details.name_ar ?? null,
+        description: p.description,
+        images: p.images.map((img: { image: string }) => img.image),
+        categoryId: category.id,
+        price: Math.round(p.price * 100),
+        quantityAvailable: Math.floor(Math.random() * (5000 - 500 + 1)) + 500,
+        minOrderQuantity: p.min_quantity,
+        visibility: ProductVisibility.PUBLIC,
+        isDeliveryAvailable: true,
+        isSampleAvailable: p.ask_for_sample,
+        samplePrice: p.sample_price
+          ? Math.round(p.sample_price * 100)
+          : undefined,
+        orderType: p.order_type.toUpperCase() as OrderType,
+        numberOfPiecesPerBox: p.pieces_per_box ?? undefined,
+        rating: p.rating,
+        companyId,
       });
     });
   });
 
-  await prisma.product.createMany({ data: toCreate, skipDuplicates: true });
+  await prisma.product.createMany({
+    data: toCreate,
+    skipDuplicates: true,
+  });
+
   console.log(`Created ${toCreate.length} products`);
 }
+
+seedProducts().catch((e) => {
+  console.error("❌ Seed failed", e);
+  process.exit(1);
+});
 
 // ==============================================
 // MAIN EXECUTION
 // ==============================================
 async function main() {
   try {
-    await seedSuppliers();
-    await seedCategories();
+    // await seedSuppliersAndBuyers();
     await seedProducts();
   } catch (e) {
     console.error("Seed error:", e);
