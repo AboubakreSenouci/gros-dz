@@ -276,5 +276,6 @@ model Shortlist {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([companyId, productId], name: "companyId_productId")
   @@map("shortlist")
 }

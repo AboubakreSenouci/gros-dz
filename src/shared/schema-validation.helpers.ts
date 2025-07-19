@@ -16,7 +16,7 @@ export const PaginationSchema = z.object({
     .refine((val) => val > 0 && val <= 100, {
       message: 'PageSize must be between 1 and 100',
     }),
-});
+}).optional();
 
 export type PaginationParams = z.infer<typeof PaginationSchema>
 
